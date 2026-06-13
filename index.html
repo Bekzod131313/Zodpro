@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Isitish tizimini hisoblash kalkulyatori</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>🔥 Isitish tizimini hisoblash kalkulyatori</h1>
+    <p class="subtitle">
+      Uyingiz va xonalarning o'lchamlarini kiriting — dastur issiqlik yo'qotishini hisoblab,
+      radiatorlar sonini, issiq pol uchun quvur uzunligini, qozon quvvatini, boyler hajmini,
+      kengayish bagi (rasshirbak) o'lchamini va gaz sarfini avtomatik chiqaradi.
+    </p>
+  </header>
+
+  <section class="card">
+    <h2>1. Umumiy parametrlar</h2>
+    <div class="grid">
+      <label>
+        Tashqi hisoblash harorati (°C)
+        <input type="number" id="outdoorTemp" value="-15" step="1">
+      </label>
+
+      <label>
+        Devor turi (issiqlik izolyatsiyasi)
+        <select id="wallType">
+          <option value="yaxshi">Yaxshi izolyatsiyalangan (U≈0.35)</option>
+          <option value="ortacha" selected>O'rtacha (g'isht, U≈0.6)</option>
+          <option value="yomon">Izolyatsiyasiz / eski (U≈1.2)</option>
+        </select>
+      </label>
+
+      <label>
+        Deraza turi
+        <select id="windowType">
+          <option value="uch_qavat">3 qavatli plastik (U≈1.4)</option>
+          <option value="ikki_qavat" selected>2 qavatli plastik (U≈2.2)</option>
+          <option value="bitta_qavat">Oddiy bitta qavat (U≈5.0)</option>
+        </select>
+      </label>
+
+      <label>
+        Tom turi (yuqori qavat uchun)
+        <select id="roofType">
+          <option value="izolyatsiyali" selected>Issiqlik izolyatsiyali (U≈0.3)</option>
+          <option value="izolyatsiyasiz">Izolyatsiyasiz (U≈1.2)</option>
+        </select>
+      </label>
+
+      <label>
+        Pol turi (yer qavat uchun)
+        <select id="floorType">
+          <option value="izolyatsiyali" selected>Issiqlik izolyatsiyali (U≈0.4)</option>
+          <option value="izolyatsiyasiz">Izolyatsiyasiz (U≈1.0)</option>
+        </select>
+      </label>
+
+      <label>
+        Isitish tizimi harorat rejimi (radiator uchun)
+        <select id="systemDeltaT">
+          <option value="70" selected>Yuqori harorat (70/55, ΔT≈70)</option>
+          <option value="60">O'rtacha (60/45, ΔT≈60)</option>
+          <option value="50">Past harorat (50/40, ΔT≈50)</option>
+          <option value="40">Issiq pol rejimi (ΔT≈40)</option>
+        </select>
+      </label>
+
+      <label>
+        Radiator seksiyasi quvvati, ΔT70 da (Vt)
+        <input type="number" id="sectionPower" value="180" step="1">
+      </label>
+
+      <label>
+        Issiq pol quvur qadami (sm)
+        <input type="number" id="pipeStep" value="20" step="1">
+      </label>
+
+      <label>
+        Kollektorgacha o'rtacha masofa (m)
+        <input type="number" id="manifoldDistance" value="5" step="0.5">
+      </label>
+
+      <label>
+        Issiq suvga (DHW) ta'minot turi
+        <select id="dhwType">
+          <option value="yoq">Kerak emas</option>
+          <option value="boyler" selected>Boyler (akkumulyatsion suv isitgich)</option>
+          <option value="kombi">Kombi qozon (ikki konturli)</option>
+        </select>
+      </label>
+
+      <label>
+        Uyda necha kishi yashaydi (boyler uchun)
+        <input type="number" id="residents" value="4" step="1" min="1">
+      </label>
+
+      <label>
+        Gazning kaloriyaligi (kVt·soat/m³)
+        <input type="number" id="gasCalorific" value="9.3" step="0.1">
+      </label>
+
+      <label>
+        Qozon FIK (%)
+        <input type="number" id="boilerEfficiency" value="90" step="1">
+      </label>
+
+      <label>
+        Isitish mavsumi davomiyligi (kun)
+        <input type="number" id="heatingDays" value="120" step="1">
+      </label>
+
+      <label>
+        O'rtacha yuklanish koeffitsienti (0-1)
+        <input type="number" id="loadFactor" value="0.5" step="0.05" min="0.1" max="1">
+      </label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>2. Xonalar</h2>
+    <p class="hint">
+      Har bir xona uchun o'lchamlarini, tashqi devor uzunligini (faqat ko'cha tomonga qaragan devorlar),
+      deraza/eshik maydonini va qaysi qavatda joylashganini kiriting.
+    </p>
+    <div id="roomList"></div>
+    <button type="button" id="addRoom" class="btn btn-secondary">+ Xona qo'shish</button>
+  </section>
+
+  <div class="actions">
+    <button type="button" id="calculate" class="btn btn-primary">Hisoblash</button>
+  </div>
+
+  <section class="card" id="resultsSection" hidden>
+    <h2>3. Natijalar</h2>
+
+    <h3>Xonalar bo'yicha</h3>
+    <div class="table-wrap">
+      <table id="roomResults">
+        <thead>
+          <tr>
+            <th>Xona</th>
+            <th>Maydon (m²)</th>
+            <th>Issiqlik yo'qotish (Vt)</th>
+            <th>Radiator (seksiya)</th>
+            <th>Issiq pol quvuri (m)</th>
+            <th>Izoh</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <h3>Uy bo'yicha umumiy natija</h3>
+    <div class="summary-grid" id="summaryGrid"></div>
+  </section>
+
+  <footer>
+    <p>
+      Eslatma: bu dastur "yiriklashtirilgan" muhandislik usullari asosida taxminiy hisob-kitob beradi.
+      Aniq loyiha uchun mutaxassis muhandis tomonidan to'liq issiqlik hisobi tavsiya etiladi.
+    </p>
+  </footer>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
